@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cream: #f5f0e8;
+  --yellow: #f5c518;
+  --dark: #1a1a1a;
+  --card-dark: #1e1e1e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  @apply bg-cream text-dark font-sans antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-display;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-jakarta), var(--font-inter), system-ui, sans-serif;
+  }
+  .font-body {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+}
