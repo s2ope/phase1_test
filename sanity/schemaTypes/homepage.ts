@@ -8,6 +8,7 @@ export const heroSchema = defineType({
     defineField({ name: 'headlineStart', title: 'Headline — Line 1', type: 'string' }),
     defineField({ name: 'headlineMiddle', title: 'Headline — Line 2', type: 'string' }),
     defineField({ name: 'headlineEnd', title: 'Headline — Line 3', type: 'string' }),
+    defineField({ name: 'headlineFinal', title: 'Headline — Line 4', type: 'string' }),
     defineField({
       name: 'emojiIcons',
       title: 'Emoji Icons',
