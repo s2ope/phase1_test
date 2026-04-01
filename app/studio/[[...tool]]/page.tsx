@@ -1,8 +1,17 @@
 'use client'
 
-import { NextStudio } from 'next-sanity/studio'
+import dynamic from 'next/dynamic'
 import config from '../../../sanity.config'
 
+const Studio = dynamic(
+  () => import('sanity').then((mod) => mod.Studio),
+  { ssr: false }
+)
+
 export default function StudioPage() {
-  return <NextStudio config={config} />
+  return (
+    <div style={{ height: '100vh' }}>
+      <Studio config={config} />
+    </div>
+  )
 }

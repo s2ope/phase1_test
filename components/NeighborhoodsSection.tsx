@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { NeighborhoodsSectionData, PropertyCard } from "@/sanity/types";
+import type { NeighborhoodsSectionData, PropertyCard } from "../sanity/types";
 
 interface NeighborhoodsSectionProps {
   data?: NeighborhoodsSectionData;
@@ -14,50 +14,30 @@ const FALLBACK: NeighborhoodsSectionData = {
   city: "Boston",
   searchMoreLabel: "Search more neighborhoods",
   viewMoreLabel: "View More",
-  properties: [
-    {
-      _key: "p1",
-      price: "$17,8120.20",
-      label: "For Sale",
-      title: "Vida Residence Downtown",
-      location: "Sparkton",
-      image: { url: "/images/property-1.jpg", alt: "Property 1" },
-    },
-    {
-      _key: "p2",
-      price: "$17,8120.20",
-      label: "For Sale",
-      title: "Vida Residence Downtown",
-      location: "Sparkton",
-      image: { url: "/images/property-2.jpg", alt: "Property 2" },
-    },
-    {
-      _key: "p3",
-      price: "$17,8120.20",
-      label: "For Sale",
-      title: "Vida Residence Downtown",
-      location: "Sparkton",
-      image: { url: "/images/property-3.jpg", alt: "Property 3" },
-    },
-  ],
+  properties: [],
 };
 
 function PropertyCard({ card }: { card: PropertyCard }) {
+  const imageUrl = card.image?.url ?? "https://placehold.co/400x300/1a1a1a/ffffff?text=Property";
+  const imageAlt = card.image?.alt ?? card.title ?? "Property image";
+
   return (
     <div className="rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow group">
-      {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden">
         <Image
-          src={card.image.url}
-          alt={card.image.alt}
+          src={imageUrl}
+          alt={imageAlt}
           fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {/* Price badge */}
         <div className="absolute bottom-0 left-0 right-0 bg-[#1a1a1a]/80 backdrop-blur-sm px-4 py-3">
-          <p className="text-white text-[15px] font-bold">{card.price}</p>
+          <p className="text-white text-[15px] font-bold">
+            {card.price ?? "Price on request"}
+          </p>
           <p className="text-white/70 text-[11px]">
-            {card.label} | {card.title} · {card.location}
+            {card.label ?? "For Sale"} | {card.title ?? "Property"} · {card.location ?? ""}
           </p>
         </div>
       </div>
@@ -65,8 +45,15 @@ function PropertyCard({ card }: { card: PropertyCard }) {
   );
 }
 
-export default function NeighborhoodsSection({ data = FALLBACK }: NeighborhoodsSectionProps) {
-  const d = data ?? FALLBACK;
+export default function NeighborhoodsSection({ data }: NeighborhoodsSectionProps) {
+  const d = {
+    eyebrow: data?.eyebrow ?? FALLBACK.eyebrow,
+    headline: data?.headline ?? FALLBACK.headline,
+    city: data?.city ?? FALLBACK.city,
+    searchMoreLabel: data?.searchMoreLabel ?? FALLBACK.searchMoreLabel,
+    viewMoreLabel: data?.viewMoreLabel ?? FALLBACK.viewMoreLabel,
+    properties: data?.properties ?? FALLBACK.properties,
+  };
 
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 py-16">
@@ -85,11 +72,17 @@ export default function NeighborhoodsSection({ data = FALLBACK }: NeighborhoodsS
         </div>
 
         {/* Cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {d.properties.map((card) => (
-            <PropertyCard key={card._key} card={card} />
-          ))}
-        </div>
+        {d.properties && d.properties.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            {d.properties.map((card) => (
+              <PropertyCard key={card._key} card={card} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 text-[#1a1a1a]/40 text-[14px]">
+            No properties yet — add some in Sanity Studio.
+          </div>
+        )}
 
         {/* Footer row */}
         <div className="flex items-center justify-between">

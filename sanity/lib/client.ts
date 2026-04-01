@@ -1,22 +1,21 @@
-import { createClient } from "next-sanity";
-import createImageUrlBuilder from "@sanity/image-url";
+import { createClient } from 'next-sanity'
+import createcreateImageUrlBuilder from '@sanity/image-url'
+import { apiVersion, dataset, projectId } from '../env'
 
 export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? "YOUR_PROJECT_ID",
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production",
-  apiVersion: "2024-01-01",
-  useCdn: true,
-});
+  projectId,
+  dataset,
+  apiVersion,
+  useCdn: false,
+})
 
-const builder = createImageUrlBuilder(client);
+const builder = createcreateImageUrlBuilder({ projectId, dataset })
 
-export function urlFor(source: Parameters<typeof builder.image>[0]) {
-  return builder.image(source);
+export function urlFor(source: any) {
+  return builder.image(source)
 }
 
-// ─── GROQ queries ─────────────────────────────────────────────────────────────
-
-export const HOMEPAGE_QUERY = `*[_type == "homepage"][0]{
+export const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "e3f0f7a6-ae96-405b-b43d-e94664b3a94f"][0]{
   hero {
     headlineStart,
     headlineMiddle,
@@ -26,24 +25,24 @@ export const HOMEPAGE_QUERY = `*[_type == "homepage"][0]{
     ctaLabel,
     ctaHref,
     heroImage { ..., "url": asset->url, alt },
-    heroCaption
+    heroCaption,
   },
   searchSection {
     searchPlaceholder,
     searchImage { ..., "url": asset->url, alt },
     headlineStart,
-    headlineEnd
+    headlineEnd,
   },
   journeySection {
     eyebrow,
     headline,
-    body
+    body,
   },
   featureStrip[] {
     _key,
     headline,
     ctaLabel,
-    ctaHref
+    ctaHref,
   },
   neighborhoodsSection {
     eyebrow,
@@ -57,23 +56,24 @@ export const HOMEPAGE_QUERY = `*[_type == "homepage"][0]{
       label,
       title,
       location,
-      image { ..., "url": asset->url, alt }
-    }
+      image { ..., "url": asset->url, alt },
+    },
   },
   borrowSection {
     eyebrow,
     headline,
-    defaultAmount
+    defaultAmount,
   },
-  aboutSection {
-    eyebrow,
-    headline,
-    stats[] { _key, value, label }
-  },
+aboutSection {
+  eyebrow,
+  headline,
+  stats[] { _key, value, label },
+  image { ..., "url": asset->url, alt },  // ← add this
+},
   serviceAreaSection {
     eyebrow,
     headline,
-    locations[] { _key, name, type, address, lat, lng }
+    locations[] { _key, name, type, address, lat, lng },
   },
   testimonialsSection {
     sectionLabel,
@@ -83,12 +83,12 @@ export const HOMEPAGE_QUERY = `*[_type == "homepage"][0]{
       quote,
       authorName,
       authorRole,
-      authorImage { ..., "url": asset->url, alt }
-    }
+      authorImage { ..., "url": asset->url, alt },
+    },
   },
   ctaBand {
     headline,
     ctaLabel,
-    ctaHref
-  }
-}`;
+    ctaHref,
+  },
+}`

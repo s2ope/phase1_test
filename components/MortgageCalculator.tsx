@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { BorrowSectionData } from "@/sanity/types";
+import type { BorrowSectionData } from "../sanity/types";
 
 interface BorrowSectionProps {
   data?: BorrowSectionData;

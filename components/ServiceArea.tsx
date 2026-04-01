@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ServiceAreaSectionData, ServiceLocation } from "@/sanity/types";
+import type { ServiceAreaSectionData, ServiceLocation } from "../sanity/types";
 
 interface ServiceAreaSectionProps {
   data?: ServiceAreaSectionData;

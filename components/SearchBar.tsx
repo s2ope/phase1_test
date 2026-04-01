@@ -17,20 +17,31 @@ const FALLBACK: SearchSectionData = {
   headlineEnd: "search now.",
 };
 
-export default function SearchSection({ data = FALLBACK }: SearchSectionProps) {
-  const d = data ?? FALLBACK;
+export default function SearchBar({ data }: SearchSectionProps) {
+  const d = {
+    searchPlaceholder: data?.searchPlaceholder ?? FALLBACK.searchPlaceholder,
+    searchImage: {
+      url: data?.searchImage?.url ?? FALLBACK.searchImage.url,
+      alt: data?.searchImage?.alt ?? FALLBACK.searchImage.alt,
+    },
+    headlineStart: data?.headlineStart ?? FALLBACK.headlineStart,
+    headlineEnd: data?.headlineEnd ?? FALLBACK.headlineEnd,
+  };
 
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 pb-12">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         {/* Left: Search card */}
         <div className="relative rounded-2xl overflow-hidden aspect-[16/9] shadow-lg group">
-          <Image
-            src={d.searchImage.url}
-            alt={d.searchImage.alt}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-          />
+          {d.searchImage.url && (
+            <Image
+              src={d.searchImage.url}
+              alt={d.searchImage.alt ?? "Search image"}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          )}
           {/* Search overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center gap-2">

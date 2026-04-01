@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { FeatureItem } from "@/sanity/types";
+import type { FeatureItem } from "../sanity/types";
 
 interface FeatureSliderProps {
   items?: FeatureItem[];
@@ -35,12 +35,19 @@ const FALLBACK_ITEMS: FeatureItem[] = [
   },
 ];
 
-const VISIBLE_COUNT = 3; // how many cards visible at once on desktop
+const VISIBLE_COUNT = 3;
 
-export default function FeatureSlider({ items = FALLBACK_ITEMS }: FeatureSliderProps) {
+export default function FeaturesCarousel({ items }: FeatureSliderProps) {
+  const safeItems = (items && items.length > 0 ? items : FALLBACK_ITEMS).map((item) => ({
+    _key: item._key ?? Math.random().toString(),
+    headline: item.headline ?? "Find and finance your home",
+    ctaLabel: item.ctaLabel ?? "Learn more",
+    ctaHref: item.ctaHref ?? "#",
+  }));
+
   const [index, setIndex] = useState(0);
-  const total = items.length;
-  const maxIndex = total - VISIBLE_COUNT;
+  const total = safeItems.length;
+  const maxIndex = Math.max(total - VISIBLE_COUNT, 0);
 
   const prev = () => setIndex((i) => Math.max(i - 1, 0));
   const next = () => setIndex((i) => Math.min(i + 1, maxIndex));
@@ -69,16 +76,18 @@ export default function FeatureSlider({ items = FALLBACK_ITEMS }: FeatureSliderP
         {/* Slider viewport */}
         <div className="flex-1 overflow-hidden">
           <div
-            className="flex transition-transform duration-400 ease-in-out gap-5"
+            className="flex transition-transform duration-500 ease-in-out gap-5"
             style={{
               transform: `translateX(calc(-${index} * (100% / ${VISIBLE_COUNT}) - ${index} * (20px / ${VISIBLE_COUNT})))`,
             }}
           >
-            {items.map((item, i) => (
+            {safeItems.map((item, i) => (
               <div
                 key={item._key}
                 className="flex-shrink-0 flex flex-col gap-3 border-r border-white/10 pr-5 last:border-r-0 last:pr-0"
-                style={{ width: `calc((100% - ${(VISIBLE_COUNT - 1) * 20}px) / ${VISIBLE_COUNT})` }}
+                style={{
+                  width: `calc((100% - ${(VISIBLE_COUNT - 1) * 20}px) / ${VISIBLE_COUNT})`,
+                }}
               >
                 {/* Slide number */}
                 <span className="text-[11px] text-white/30 font-mono">
@@ -118,18 +127,20 @@ export default function FeatureSlider({ items = FALLBACK_ITEMS }: FeatureSliderP
       </div>
 
       {/* Dot indicators */}
-      <div className="flex justify-center gap-1.5 mt-5">
-        {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIndex(i)}
-            aria-label={`Go to slide ${i + 1}`}
-            className={`w-1.5 h-1.5 rounded-full transition-all ${
-              i === index ? "bg-[#f0c132] w-4" : "bg-white/30"
-            }`}
-          />
-        ))}
-      </div>
+      {maxIndex > 0 && (
+        <div className="flex justify-center gap-1.5 mt-5">
+          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all ${
+                i === index ? "bg-[#f0c132] w-4" : "bg-white/30 w-1.5"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

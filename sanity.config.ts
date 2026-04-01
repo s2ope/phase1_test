@@ -1,53 +1,17 @@
-// sanity.config.ts  ← lives at the root of your project
-
-import { defineConfig } from "sanity";
-import { structureTool } from "sanity/structure";
-import { visionTool } from "@sanity/vision";
-
-import {
-  homepageSchema,
-  heroSchema,
-  searchSectionSchema,
-  journeySectionSchema,
-  featureItemSchema,
-  propertyCardSchema,
-  statItemSchema,
-  serviceLocationSchema,
-  testimonialSchema,
-} from "./sanity/schemas/homepage";
+import { visionTool } from '@sanity/vision'
+import { defineConfig } from 'sanity'
+import { structureTool } from 'sanity/structure'
+import { apiVersion, dataset, projectId } from './sanity/env'
+import { schema } from './sanity/schemaTypes'
+import { structure } from './sanity/structure'
 
 export default defineConfig({
-  // ── Project identity ──────────────────────────────────────────────────────
-  name: "flatter-studio",
-  title: "Flatter Studio",
-
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-
-  // ── Studio route (accessible at /studio in your Next.js app) ─────────────
-  basePath: "/studio",
-
-  // ── Plugins ───────────────────────────────────────────────────────────────
+  basePath: '/studio',
+  projectId,
+  dataset,
+  schema,
   plugins: [
-    structureTool(),   // main content editor UI
-    visionTool(),      // lets you run GROQ queries live in the studio
+    structureTool({ structure }),
+    visionTool({ defaultApiVersion: apiVersion }),
   ],
-
-  // ── Schema types ──────────────────────────────────────────────────────────
-  schema: {
-    types: [
-      // Document (the actual page in Sanity)
-      homepageSchema,
-
-      // Object types (reusable blocks used inside the document)
-      heroSchema,
-      searchSectionSchema,
-      journeySectionSchema,
-      featureItemSchema,
-      propertyCardSchema,
-      statItemSchema,
-      serviceLocationSchema,
-      testimonialSchema,
-    ],
-  },
-});
+})

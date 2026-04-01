@@ -8,7 +8,6 @@ interface HeroProps {
   data?: HeroData;
 }
 
-// Fallback static content (replaced by Sanity data when wired up)
 const FALLBACK: HeroData = {
   headlineStart: "Hello",
   headlineMiddle: "Future",
@@ -25,8 +24,21 @@ const FALLBACK: HeroData = {
   heroCaption: "Every home buying journey is unique.",
 };
 
-export default function Hero({ data = FALLBACK }: HeroProps) {
-  const d = data ?? FALLBACK;
+export default function Hero({ data }: HeroProps) {
+  const d = {
+    headlineStart: data?.headlineStart ?? FALLBACK.headlineStart,
+    headlineMiddle: data?.headlineMiddle ?? FALLBACK.headlineMiddle,
+    headlineEnd: data?.headlineEnd ?? FALLBACK.headlineEnd,
+    emojiIcons: data?.emojiIcons ?? FALLBACK.emojiIcons,
+    subtext: data?.subtext ?? FALLBACK.subtext,
+    ctaLabel: data?.ctaLabel ?? FALLBACK.ctaLabel,
+    ctaHref: data?.ctaHref ?? FALLBACK.ctaHref,
+    heroImage: {
+      url: data?.heroImage?.url ?? FALLBACK.heroImage.url,
+      alt: data?.heroImage?.alt ?? FALLBACK.heroImage.alt,
+    },
+    heroCaption: data?.heroCaption ?? FALLBACK.heroCaption,
+  };
 
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 pt-12 pb-10 overflow-hidden">
@@ -70,7 +82,7 @@ export default function Hero({ data = FALLBACK }: HeroProps) {
           {/* CTA */}
           <div className="mt-1">
             <Link
-              href={d.ctaHref}
+              href={d.ctaHref ?? "#"}
               className="inline-flex items-center bg-[#1a1a1a] text-white text-[13px] font-semibold px-6 py-3 rounded-full hover:bg-[#333] transition-colors"
             >
               {d.ctaLabel}
@@ -80,26 +92,22 @@ export default function Hero({ data = FALLBACK }: HeroProps) {
 
         {/* Right: Image card */}
         <div className="relative rounded-2xl overflow-hidden aspect-[4/3] shadow-xl">
-          <Image
-            src={d.heroImage.url}
-            alt={d.heroImage.alt}
-            fill
-            className="object-cover"
-            priority
-          />
+          {d.heroImage.url && (
+            <Image
+              src={d.heroImage.url}
+              alt={d.heroImage.alt ?? "Hero image"}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+            />
+          )}
           {/* Caption bar */}
           <div className="absolute bottom-0 left-0 right-0 bg-[#1a1a1a]/80 backdrop-blur-sm px-5 py-3.5 flex items-center justify-between">
             <p className="text-white text-[13px] font-medium leading-snug max-w-[180px]">
               {d.heroCaption}
             </p>
-            {/* Arrow button */}
             <button className="w-9 h-9 rounded-full bg-[#f0c132] flex items-center justify-center flex-shrink-0 hover:bg-[#f5d060] transition-colors">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-              >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path
                   d="M2 2h10v10M2 12L12 2"
                   stroke="#1a1a1a"

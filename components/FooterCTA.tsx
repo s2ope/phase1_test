@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { CTABandData } from "@/sanity/types";
+import type { CTABandData } from "../sanity/types.ts";
 
 interface FooterProps {
   data?: CTABandData;
@@ -23,8 +23,13 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-export default function Footer({ data = FALLBACK }: FooterProps) {
-  const d = data ?? FALLBACK;
+export default function FooterCTA({ data }: FooterProps) {
+  const d = {
+    headline: data?.headline ?? FALLBACK.headline,
+    ctaLabel: data?.ctaLabel ?? FALLBACK.ctaLabel,
+    ctaHref: data?.ctaHref ?? FALLBACK.ctaHref,
+    footerLinks: data?.footerLinks ?? FALLBACK.footerLinks,
+  };
 
   return (
     <>
@@ -56,7 +61,7 @@ export default function Footer({ data = FALLBACK }: FooterProps) {
               {d.headline}
             </h2>
             <Link
-              href={d.ctaHref}
+              href={d.ctaHref ?? "#"}
               className="flex-shrink-0 bg-[#f0c132] text-[#1a1a1a] text-[13px] font-semibold px-6 py-3 rounded-full hover:bg-[#f5d060] transition-colors"
             >
               {d.ctaLabel}
@@ -70,10 +75,10 @@ export default function Footer({ data = FALLBACK }: FooterProps) {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             {/* Links */}
             <nav className="flex items-center gap-6 flex-wrap">
-              {d.footerLinks.map((link) => (
+              {d.footerLinks?.map((link) => (
                 <Link
                   key={link._key}
-                  href={link.href}
+                  href={link.href ?? "#"}
                   className="text-[12px] text-white/50 hover:text-white transition-colors"
                 >
                   {link.label}
@@ -90,7 +95,7 @@ export default function Footer({ data = FALLBACK }: FooterProps) {
                 </span>
               </div>
               <span className="text-[11px] text-white/30">
-                © Copyright 2024, All Rights Reserved
+                © Copyright 2026, All Rights Reserved
               </span>
             </div>
           </div>
