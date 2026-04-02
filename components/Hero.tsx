@@ -114,12 +114,14 @@ alt: data?.heroImage?.alt ?? FALLBACK.heroImage?.alt,
           <div className="relative rounded-2xl overflow-hidden aspect-[4/3] shadow-xl">
             {d.heroImage.url && (
               <Image
-                src={d.heroImage.url}
-                alt={d.heroImage.alt ?? "Hero image"}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-              />
+              src={d.heroImage.url}
+              alt={d.heroImage.alt ?? "Hero image"}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+              priority
+              loading="eager"
+            />
             )}
             {/* Caption bar */}
             <div className="absolute bottom-0 left-0 right-0 bg-[#1a1a1a]/80 backdrop-blur-sm px-5 py-3.5 flex items-center justify-between">
