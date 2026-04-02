@@ -16,13 +16,13 @@ const FALLBACK: TestimonialsSectionData = {
 };
 
 export default function Testimonials({ data }: TestimonialsSectionProps) {
-  const d = {
-    sectionLabel: data?.sectionLabel ?? FALLBACK.sectionLabel,
-    viewMoreLabel: data?.viewMoreLabel ?? FALLBACK.viewMoreLabel,
-    items: data?.items ?? FALLBACK.items,
-  };
+const d = {
+  sectionLabel: data?.sectionLabel ?? FALLBACK.sectionLabel,
+  viewMoreLabel: data?.viewMoreLabel ?? FALLBACK.viewMoreLabel,
+  items: data?.items ?? FALLBACK.items ?? [],  // ← add ?? []
+};
 
-  const total = d.items.length;
+  const total = (d.items ?? []).length;
   const [index, setIndex] = useState(0);
 
   const prev = () => setIndex((i) => (i - 1 + total) % total);
@@ -141,7 +141,7 @@ export default function Testimonials({ data }: TestimonialsSectionProps) {
           {/* Dot indicators */}
           {total > 1 && (
             <div className="flex gap-1.5">
-              {d.items.map((_, i) => (
+         {(d.items ?? []).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setIndex(i)}

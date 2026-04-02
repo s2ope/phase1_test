@@ -36,8 +36,8 @@ export default function Hero({ data }: HeroProps) {
     ctaLabel: data?.ctaLabel ?? FALLBACK.ctaLabel,
     ctaHref: data?.ctaHref ?? FALLBACK.ctaHref,
     heroImage: {
-      url: data?.heroImage?.url ?? FALLBACK.heroImage.url,
-      alt: data?.heroImage?.alt ?? FALLBACK.heroImage.alt,
+     url: data?.heroImage?.url ?? FALLBACK.heroImage?.url,
+alt: data?.heroImage?.alt ?? FALLBACK.heroImage?.alt,
     },
     heroCaption: data?.heroCaption ?? FALLBACK.heroCaption,
   };

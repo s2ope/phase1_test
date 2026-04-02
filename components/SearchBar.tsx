@@ -34,8 +34,8 @@ export default function SearchBar({ data }: SearchSectionProps) {
   const d = {
     searchPlaceholder: data?.searchPlaceholder ?? FALLBACK.searchPlaceholder,
     searchImage: {
-      url: data?.searchImage?.url ?? FALLBACK.searchImage.url,
-      alt: data?.searchImage?.alt ?? FALLBACK.searchImage.alt,
+   url: data?.searchImage?.url ?? FALLBACK.searchImage?.url,
+alt: data?.searchImage?.alt ?? FALLBACK.searchImage?.alt,
     },
     headlineStart: data?.headlineStart ?? FALLBACK.headlineStart,
     headlineEnd: data?.headlineEnd ?? FALLBACK.headlineEnd,

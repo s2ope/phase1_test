@@ -93,7 +93,7 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
 
           {/* Location list */}
           <div className="flex flex-col gap-3">
-            {d.locations.map((loc) => {
+          {(d.locations ?? []).map((loc) => {
               const isActive = activeLocation?._key === loc._key;
               return (
                 <button
