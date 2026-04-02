@@ -31,7 +31,7 @@ export interface AboutSectionData {
   image?: SanityImage
 }
 
-export type FeatureItem = {
+export interface FeatureItem {
   _key: string
   title?: string
   headline?: string
