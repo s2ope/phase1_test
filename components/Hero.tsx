@@ -127,7 +127,7 @@ export default function Hero({ data }: HeroProps) {
                 {d.heroCaption}
               </p>
               <button className="w-9 h-9 rounded-full bg-[#f0c132] flex items-center justify-center flex-shrink-0 hover:bg-[#f5d060] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="rotate-90">
                   <path
                     d="M2 2h10v10M2 12L12 2"
                     stroke="#1a1a1a"

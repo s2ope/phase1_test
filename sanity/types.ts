@@ -18,3 +18,65 @@ export interface AboutSectionData {
   stats: StatItem[];
   image?: SanityImage; // ← add this
 }
+
+export type FeatureItem = {
+  _key: string
+  title: string
+  headline: string
+  icon: any // or SanityImageSource if using @sanity/image-url
+}
+
+export type HeroData = {
+  headlineStart?: string
+  headlineMiddle?: string
+  headlineEnd?: string
+  headlineFinal?: string
+  emojiIcons?: string
+  subtext?: string
+  ctaLabel?: string
+  ctaHref?: string
+  heroImage?: {
+    url?: string
+    alt?: string
+  }
+  heroCaption?: string
+}
+
+export type JourneySectionData = {
+  eyebrow?: string
+  headline?: string
+  body?: string
+}
+
+export type PropertyItem = {
+  _key: string
+  _type: string
+  title?: string
+  price?: string
+  image?: {
+    url?: string
+    alt?: string
+  }
+}
+
+export type NeighborhoodsSectionData = {
+  eyebrow?: string
+  headline?: string
+  city?: string
+  searchMoreLabel?: string
+  viewMoreLabel?: string
+  properties?: PropertyItem[]
+}
+
+export interface HomeRecord {
+  _id: string
+  title: string
+  price: string
+  location: string
+  address: string
+  type: "for-sale" | "for-rent"
+  bedrooms: number
+  bathrooms: number
+  area: number
+  image: { url: string; alt: string }
+}

@@ -1,6 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { client } from "../sanity/lib/client"; // adjust path
+import { searchLocationsQuery } from "../sanity/queries";
 import type { SearchSectionData } from "../sanity/types";
 
 interface SearchSectionProps {
@@ -8,7 +12,7 @@ interface SearchSectionProps {
 }
 
 const FALLBACK: SearchSectionData = {
-  searchPlaceholder: "Location, Neighborhood or Address",
+  searchPlaceholder: "Emirate, Neighborhood or building",
   searchImage: {
     url: "/images/search-interior.jpg",
     alt: "Beautiful home interior",
@@ -18,6 +22,15 @@ const FALLBACK: SearchSectionData = {
 };
 
 export default function SearchBar({ data }: SearchSectionProps) {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [allTerms, setAllTerms] = useState<string[]>([]);
+  const [filtered, setFiltered] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const d = {
     searchPlaceholder: data?.searchPlaceholder ?? FALLBACK.searchPlaceholder,
     searchImage: {
@@ -28,66 +41,161 @@ export default function SearchBar({ data }: SearchSectionProps) {
     headlineEnd: data?.headlineEnd ?? FALLBACK.headlineEnd,
   };
 
+  // Fetch all records and build searchable terms
+  useEffect(() => {
+    client
+      .fetch<{ title: string; location: string }[]>(searchLocationsQuery)
+      .then((results) => {
+        const terms = new Set<string>();
+
+        results.forEach((r) => {
+          // Full location e.g. "Boston"
+          if (r.location) terms.add(r.location);
+
+          // Property title e.g. "Luxury Apartment"
+          if (r.title) terms.add(r.title);
+
+          // Neighborhood split by comma e.g. "Back Bay" from "Back Bay, Boston"
+          if (r.location) {
+            r.location.split(",").forEach((part) => {
+              const trimmed = part.trim();
+              if (trimmed) terms.add(trimmed);
+            });
+          }
+        });
+
+        setAllTerms([...terms]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Filter as user types
+  useEffect(() => {
+    if (query.trim().length === 0) {
+      setFiltered([]);
+      setOpen(false);
+      return;
+    }
+    const results = allTerms.filter((term) =>
+      term.toLowerCase().includes(query.toLowerCase())
+    );
+    setFiltered(results);
+    setOpen(results.length > 0);
+  }, [query, allTerms]);
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        !inputRef.current?.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleSelect(value: string) {
+    setQuery(value);
+    setOpen(false);
+    // Use `q` as a generic search param so properties page can match against title, location, neighborhood
+    router.push(`/properties?q=${encodeURIComponent(value)}`);
+  }
+
+  function handleSearch() {
+    if (!query.trim()) return;
+    router.push(`/properties?q=${encodeURIComponent(query.trim())}`);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") handleSearch();
+    if (e.key === "Escape") setOpen(false);
+  }
+
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 pb-12">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-        {/* Left: Search card */}
-        <div className="relative rounded-2xl overflow-hidden aspect-[16/9] shadow-lg group">
-          {d.searchImage.url && (
-            <Image
-              src={d.searchImage.url}
-              alt={d.searchImage.alt ?? "Search image"}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-          )}
-          {/* Search overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center gap-2">
-            {/* Input */}
-            <div className="flex-1 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 flex items-center gap-3">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="text-gray-400 flex-shrink-0"
-              >
-                <path
-                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                />
-                <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
-              </svg>
-              <span className="text-[12px] text-gray-400 truncate">
-                {d.searchPlaceholder}
-              </span>
-            </div>
-            {/* Arrow button */}
-            <button className="w-10 h-10 rounded-full bg-[#f0c132] flex items-center justify-center flex-shrink-0 hover:bg-[#f5d060] transition-colors shadow">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M2 2h10v10M2 12L12 2"
-                  stroke="#1a1a1a"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
+  <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center gap-4">
 
-        {/* Right: Headline */}
-        <div className="flex items-end justify-start md:justify-end pb-2">
-          <h2 className="text-[48px] md:text-[56px] font-bold text-[#1a1a1a] leading-[1.05] tracking-tight text-right">
-            <span className="block">{d.headlineStart}</span>
-            <span className="block">{d.headlineEnd}</span>
-          </h2>
-        </div>
+    {/* Search card — full width on mobile, ~55% on desktop */}
+    <div className="relative bg-[#12151c] rounded-2xl flex items-center overflow-visible shadow-xl w-full md:w-[50%] flex-shrink-0">
+
+      {/* Left image */}
+      <div className="relative h-[110px] w-[130px] md:h-[130px] md:w-[160px] flex-shrink-0 rounded-xl overflow-hidden m-3">
+        {d.searchImage.url && (
+          <Image
+            src={d.searchImage.url}
+            alt={d.searchImage.alt ?? "Search image"}
+            fill
+            sizes="160px"
+            className="object-cover"
+          />
+        )}
       </div>
-    </section>
+
+      {/* Input */}
+      <div className="flex-1 px-4 md:px-6 relative">
+        <label className="block text-[11px] text-white/40 mb-1.5 font-medium tracking-wide uppercase">
+          Location
+        </label>
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => filtered.length > 0 && setOpen(true)}
+          placeholder={loading ? "Loading locations..." : d.searchPlaceholder}
+          disabled={loading}
+          className="w-full bg-transparent text-white text-[13px] placeholder:text-white/30 outline-none border-b border-white/20 pb-2 focus:border-white/50 transition-colors disabled:opacity-40"
+        />
+
+        {/* Dropdown */}
+        {open && (
+          <div
+            ref={dropdownRef}
+            className="absolute left-0 right-0 top-full mt-2 bg-[#1e2230] rounded-xl shadow-2xl z-50 overflow-hidden"
+          >
+            {filtered.map((suggestion, i) => (
+              <button
+                key={i}
+                onClick={() => handleSelect(suggestion)}
+                className="w-full text-left px-5 py-3 text-[13px] text-white/70 hover:bg-white/10 hover:text-white transition-colors flex items-center gap-3"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 text-white/30">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" strokeWidth="1.8" />
+                  <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Circle arrow button */}
+      <button
+        onClick={handleSearch}
+        aria-label="Search properties"
+        className="flex-shrink-0 w-[80px] h-[80px] md:w-[96px] md:h-[96px] rounded-full border border-white/20 flex items-center justify-center mr-3 hover:bg-white/5 hover:border-white/40 transition-all group"
+      >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform rotate-90">
+          <path d="M7 7h10v10M7 17L17 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    {/* Headline — below card on mobile, right side on desktop */}
+    <div className="flex items-center md:justify-end flex-1">
+      <h2 className="text-[36px] sm:text-[44px] md:text-[48px] lg:text-[56px] font-bold text-[#1a1a1a] leading-[1.05] tracking-tight md:text-right">
+        <span className="block">{d.headlineStart}</span>
+        <span className="block">{d.headlineEnd}</span>
+      </h2>
+    </div>
+
+  </div>
+</section>
   );
 }

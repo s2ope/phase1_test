@@ -92,7 +92,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="absolute top-full left-0 right-0 bg-[#1a1a1a] border-t border-white/10 px-6 py-5 flex flex-col gap-4 md:hidden">
+        <div className="absolute top-full left-0 right-0 bg-[#1a1a1a]px-6 py-5 flex flex-col gap-4 md:hidden">
           {navLinks.map((link) => (
             <Link
               key={link.label}

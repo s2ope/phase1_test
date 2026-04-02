@@ -58,7 +58,7 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
   const embedUrl = buildEmbedUrl(activeLocation, apiKey);
 
   return (
-    <section className="bg-[#f5f0e8] px-6 md:px-10 py-16 border-t border-[#1a1a1a]/10">
+    <section className="bg-[#f5f0e8] px-6 md:px-10 py-16">
       <div className="max-w-6xl mx-auto flex flex-col gap-8">
         {/* Header */}
         <div className="flex flex-col items-center gap-2 text-center">

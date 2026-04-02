@@ -31,7 +31,7 @@ export default function Testimonials({ data }: TestimonialsSectionProps) {
   // Empty state — no testimonials in Sanity yet
   if (!d.items || d.items.length === 0) {
     return (
-      <section className="bg-[#f5f0e8] px-6 md:px-10 py-16 border-t border-[#1a1a1a]/10">
+      <section className="bg-[#f5f0e8] px-6 md:px-10 py-16">
         <div className="max-w-6xl mx-auto flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-[14px] font-semibold text-[#1a1a1a]">
@@ -55,7 +55,7 @@ export default function Testimonials({ data }: TestimonialsSectionProps) {
   const current = d.items[index];
 
   return (
-    <section className="bg-[#f5f0e8] px-6 md:px-10 py-16 border-t border-[#1a1a1a]/10">
+    <section className="bg-[#f5f0e8] px-6 md:px-10 py-16">
       <div className="max-w-6xl mx-auto flex flex-col gap-8">
         {/* Header row */}
         <div className="flex items-center justify-between">
