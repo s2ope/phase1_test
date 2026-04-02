@@ -43,31 +43,29 @@ export default function SearchBar({ data }: SearchSectionProps) {
 
   // Fetch all records and build searchable terms
   useEffect(() => {
-    client
-      .fetch<{ title: string; location: string }[]>(searchLocationsQuery)
-      .then((results) => {
-        const terms = new Set<string>();
+  client
+    .fetch<{ title: string; location: string; address: string }[]>(searchLocationsQuery)
+    .then((results) => {
+      const terms = new Set<string>();
 
-        results.forEach((r) => {
-          // Full location e.g. "Boston"
-          if (r.location) terms.add(r.location);
+      results.forEach((r) => {
+        if (r.title)    terms.add(r.title);
+        if (r.location) terms.add(r.location);
+        if (r.address)  terms.add(r.address);
 
-          // Property title e.g. "Luxury Apartment"
-          if (r.title) terms.add(r.title);
+        // Split location by comma for partial matches e.g. "Dubai" from "Dubai, UAE"
+        if (r.location) {
+          r.location.split(",").forEach((part) => {
+            const trimmed = part.trim();
+            if (trimmed) terms.add(trimmed);
+          });
+        }
+      });
 
-          // Neighborhood split by comma e.g. "Back Bay" from "Back Bay, Boston"
-          if (r.location) {
-            r.location.split(",").forEach((part) => {
-              const trimmed = part.trim();
-              if (trimmed) terms.add(trimmed);
-            });
-          }
-        });
-
-        setAllTerms([...terms]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+      setAllTerms([...terms]);
+    })
+    .finally(() => setLoading(false));
+}, []);
 
   // Filter as user types
   useEffect(() => {
@@ -114,7 +112,6 @@ export default function SearchBar({ data }: SearchSectionProps) {
     if (e.key === "Enter") handleSearch();
     if (e.key === "Escape") setOpen(false);
   }
-
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 pb-12">
   <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center gap-4">

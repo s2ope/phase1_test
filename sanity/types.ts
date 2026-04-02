@@ -67,7 +67,6 @@ export type NeighborhoodsSectionData = {
   viewMoreLabel?: string
   properties?: PropertyItem[]
 }
-
 export interface HomeRecord {
   _id: string
   title: string
@@ -78,5 +77,6 @@ export interface HomeRecord {
   bedrooms: number
   bathrooms: number
   area: number
-  image: { url: string; alt: string }
+  description?: string
+  image?: { url: string; alt: string } // ← make optional, asset->url can be null
 }

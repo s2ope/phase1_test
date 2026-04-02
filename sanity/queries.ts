@@ -1,12 +1,17 @@
 // sanity/queries.ts
+
+// Used by SearchBar to populate autocomplete suggestions
 export const searchLocationsQuery = `
   *[_type == "homeRecord"] {
-    location
+    title,
+    location,
+    address
   }
 `
 
-export const searchPropertiesQuery = `
-  *[_type == "homeRecord" && location match $location + "*"] {
+// Used by properties/page.tsx — fetches everything, filtering happens in JS
+export const allPropertiesQuery = `
+  *[_type == "homeRecord"] {
     _id,
     title,
     price,
@@ -16,9 +21,10 @@ export const searchPropertiesQuery = `
     bedrooms,
     bathrooms,
     area,
-    "image": image { 
-      "url": asset->url, 
-      alt 
+    description,
+    "image": image {
+      "url": asset->url,
+      alt
     }
   }
 `
