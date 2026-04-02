@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { NeighborhoodsSectionData, PropertyCard } from "../sanity/types";
+import type { NeighborhoodsSectionData, HomeRecord } from "../sanity/types";
 
 interface NeighborhoodsSectionProps {
   data?: NeighborhoodsSectionData;
+  properties?: HomeRecord[];
 }
 
 const FALLBACK: NeighborhoodsSectionData = {
@@ -17,9 +18,9 @@ const FALLBACK: NeighborhoodsSectionData = {
   properties: [],
 };
 
-function PropertyCard({ card }: { card: PropertyCard }) {
-  const imageUrl = card.image?.url ?? "https://placehold.co/400x300/1a1a1a/ffffff?text=Property";
-  const imageAlt = card.image?.alt ?? card.title ?? "Property image";
+function PropertyCard({ p }: { p: HomeRecord }) {
+  const imageUrl = p.image?.url ?? "https://placehold.co/400x300/1a1a1a/ffffff?text=Property";
+  const imageAlt = p.image?.alt ?? p.title ?? "Property image";
 
   return (
     <div className="rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow group">
@@ -31,13 +32,12 @@ function PropertyCard({ card }: { card: PropertyCard }) {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {/* Price badge */}
         <div className="absolute bottom-0 left-0 right-0 bg-[#1a1a1a]/80 backdrop-blur-sm px-4 py-3">
           <p className="text-white text-[15px] font-bold">
-            {card.price ?? "Price on request"}
+            {p.price ?? "Price on request"}
           </p>
           <p className="text-white/70 text-[11px]">
-            {card.label ?? "For Sale"} | {card.title ?? "Property"} · {card.location ?? ""}
+            {p.type === "for-sale" ? "For Sale" : "For Rent"} | {p.title ?? "Property"} · {p.location ?? ""}
           </p>
         </div>
       </div>
@@ -45,19 +45,19 @@ function PropertyCard({ card }: { card: PropertyCard }) {
   );
 }
 
-export default function NeighborhoodsSection({ data }: NeighborhoodsSectionProps) {
+export default function NeighborhoodsSection({ data, properties }: NeighborhoodsSectionProps) {
   const d = {
     eyebrow: data?.eyebrow ?? FALLBACK.eyebrow,
     headline: data?.headline ?? FALLBACK.headline,
     city: data?.city ?? FALLBACK.city,
     searchMoreLabel: data?.searchMoreLabel ?? FALLBACK.searchMoreLabel,
     viewMoreLabel: data?.viewMoreLabel ?? FALLBACK.viewMoreLabel,
-    properties: data?.properties ?? FALLBACK.properties,
   };
 
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 py-16">
       <div className="max-w-6xl mx-auto flex flex-col gap-8">
+
         {/* Header */}
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="flex items-center gap-2">
@@ -72,10 +72,10 @@ export default function NeighborhoodsSection({ data }: NeighborhoodsSectionProps
         </div>
 
         {/* Cards grid */}
-        {d.properties && d.properties.length > 0 ? (
+        {properties && properties.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-            {d.properties.map((card) => (
-              <PropertyCard key={card._key} card={card} />
+            {properties.map((p) => (
+              <PropertyCard key={p._id} p={p} />
             ))}
           </div>
         ) : (
@@ -87,18 +87,19 @@ export default function NeighborhoodsSection({ data }: NeighborhoodsSectionProps
         {/* Footer row */}
         <div className="flex items-center justify-between">
           <Link
-            href="/neighborhoods"
+            href="/properties"
             className="text-[13px] text-[#1a1a1a] font-medium underline underline-offset-4 hover:text-[#1a1a1a]/60 transition-colors"
           >
             {d.searchMoreLabel}
           </Link>
           <Link
-            href="/neighborhoods"
+            href="/properties"
             className="text-[12px] text-[#1a1a1a]/60 border border-[#1a1a1a]/20 px-4 py-2 rounded-full hover:border-[#1a1a1a]/50 transition-colors"
           >
             {d.viewMoreLabel}
           </Link>
         </div>
+
       </div>
     </section>
   );

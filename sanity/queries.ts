@@ -28,3 +28,17 @@ export const allPropertiesQuery = `
     }
   }
 `
+
+export const neighborhoodPropertiesQuery = `
+  *[_type == "homeRecord" && location match $city + "*"][0..5] {
+    _id,
+    title,
+    price,
+    location,
+    type,
+    "image": image {
+      "url": asset->url,
+      alt
+    }
+  }
+`

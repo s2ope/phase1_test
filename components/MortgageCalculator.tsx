@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { BorrowSectionData } from "../sanity/types";
 
 interface BorrowSectionProps {
@@ -27,34 +27,89 @@ function calculateMonthlyPayment(
   downPayment: number,
   termYears: number
 ): number {
-  const loanAmount = principal - downPayment;
-  if (loanAmount <= 0) return 0;
-  if (annualRate === 0) return loanAmount / (termYears * 12);
-  const monthlyRate = annualRate / 100 / 12;
+  const loan = principal - downPayment;
+  if (loan <= 0) return 0;
+  if (annualRate === 0) return loan / (termYears * 12);
+  const mr = annualRate / 100 / 12;
   const n = termYears * 12;
-  return (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, n)) /
-    (Math.pow(1 + monthlyRate, n) - 1);
+  return (loan * mr * Math.pow(1 + mr, n)) / (Math.pow(1 + mr, n) - 1);
 }
 
 export default function BorrowSection({ data = FALLBACK }: BorrowSectionProps) {
   const d = data ?? FALLBACK;
 
-  const [principal, setPrincipal] = useState(500000);
-  const [interestRate, setInterestRate] = useState(5.5);
-  const [downPayment, setDownPayment] = useState(100000);
+  const [principalStr, setPrincipalStr] = useState("");
+  const [downStr, setDownStr] = useState("");
+  const [interestRate, setInterestRate] = useState<number | "">(5.5);
   const [termYears, setTermYears] = useState(30);
   const [calculated, setCalculated] = useState(false);
 
-  const monthlyPayment = useCallback(
-    () => calculateMonthlyPayment(principal, interestRate, downPayment, termYears),
+  const principal = parseFloat(principalStr) || 0;
+  const downPayment = Math.min(parseFloat(downStr) || 0, principal);
+  const pct = principal > 0 ? Math.min(100, Math.max(0, (downPayment / principal) * 100)) : 0;
+
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  function pctFromClientX(clientX: number) {
+    if (!trackRef.current) return 0;
+    const rect = trackRef.current.getBoundingClientRect();
+    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * 100;
+  }
+
+  function applyPct(p: number) {
+    const clamped = Math.max(0, Math.min(100, p));
+    if (principal > 0) {
+      const dp = Math.round((clamped / 100) * principal);
+      setDownStr(dp > 0 ? String(dp) : "");
+    }
+    setCalculated(false);
+  }
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      if (!dragging.current) return;
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      applyPct(pctFromClientX(clientX));
+    };
+    const onUp = () => { dragging.current = false; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchend", onUp);
+    };
+  }, [principal]);
+
+  const onTrackDown = (e: React.MouseEvent | React.TouchEvent) => {
+    dragging.current = true;
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    applyPct(pctFromClientX(clientX));
+  };
+
+  const onDownInput = (val: string) => {
+    const num = parseFloat(val);
+    if (!isNaN(num) && principal > 0 && num > principal) {
+      setDownStr(String(principal));
+    } else {
+      setDownStr(val);
+    }
+    setCalculated(false);
+  };
+
+  const monthly = useCallback(
+    () => calculateMonthlyPayment(principal, Number(interestRate) || 0, downPayment, termYears),
     [principal, interestRate, downPayment, termYears]
   );
-
-  const handleCalculate = () => setCalculated(true);
 
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 py-16">
       <div className="max-w-6xl mx-auto flex flex-col gap-8">
+
         {/* Header */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -70,39 +125,64 @@ export default function BorrowSection({ data = FALLBACK }: BorrowSectionProps) {
 
         {/* Calculator card */}
         <div className="bg-[#1a1a1a] rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+
           {/* Left: Inputs */}
           <div className="flex flex-col gap-5">
-            {/* Principal */}
+
+            {/* Home Price */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] text-white/50 uppercase tracking-widest font-mono">
                 Home Price
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[13px]">$</span>
+              <div className="relative flex items-center">
+                <span className="absolute left-4 text-white/40 text-[13px] pointer-events-none">$</span>
                 <input
                   type="number"
-                  value={principal}
-                  onChange={(e) => { setPrincipal(Number(e.target.value)); setCalculated(false); }}
-                  className="w-full bg-white/10 text-white text-[14px] rounded-xl pl-7 pr-4 py-3 outline-none focus:ring-1 focus:ring-[#f0c132] placeholder:text-white/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={principalStr}
                   placeholder="500000"
+                  onChange={(e) => { setPrincipalStr(e.target.value); setCalculated(false); }}
+                  className="w-full bg-white/10 text-white text-[13px] rounded-xl pl-8 pr-4 py-3 outline-none focus:ring-1 focus:ring-[#f0c132] placeholder:text-white/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
 
             {/* Down Payment */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] text-white/50 uppercase tracking-widest font-mono">
+              <label className="text-[11px] text-white/50 uppercase tracking-widest font-mono flex justify-between items-center">
                 Down Payment
+                <span className="text-white font-semibold normal-case">{Math.round(pct)}%</span>
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[13px]">$</span>
+              <div className="relative flex items-center">
+                <span className="absolute left-4 text-white/40 text-[13px] pointer-events-none">$</span>
                 <input
                   type="number"
-                  value={downPayment}
-                  onChange={(e) => { setDownPayment(Number(e.target.value)); setCalculated(false); }}
-                  className="w-full bg-white/10 text-white text-[14px] rounded-xl pl-7 pr-4 py-3 outline-none focus:ring-1 focus:ring-[#f0c132] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={downStr}
                   placeholder="100000"
+                  onChange={(e) => onDownInput(e.target.value)}
+                  className="w-full bg-white/10 text-white text-[13px] rounded-xl pl-8 pr-4 py-3 outline-none focus:ring-1 focus:ring-[#f0c132] placeholder:text-white/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
+              </div>
+
+              {/* Linear track */}
+              <div
+                ref={trackRef}
+                onMouseDown={onTrackDown}
+                onTouchStart={onTrackDown}
+                className="relative h-7 flex items-center cursor-pointer select-none mt-1"
+                style={{ touchAction: "none" }}
+              >
+                <div className="absolute inset-x-0 h-1.5 bg-white/10 rounded-full" />
+                <div
+                  className="absolute left-0 h-1.5 bg-[#f0c132] rounded-full pointer-events-none"
+                  style={{ width: `${pct}%` }}
+                />
+                <div
+                  className="absolute w-[18px] h-[18px] bg-white rounded-full -translate-x-1/2 pointer-events-none shadow-sm"
+                  style={{ left: `${pct}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-white/30 font-mono">
+                <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
               </div>
             </div>
 
@@ -111,20 +191,20 @@ export default function BorrowSection({ data = FALLBACK }: BorrowSectionProps) {
               <label className="text-[11px] text-white/50 uppercase tracking-widest font-mono">
                 Annual Interest Rate
               </label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input
                   type="number"
                   value={interestRate}
                   step={0.1}
-                  onChange={(e) => { setInterestRate(Number(e.target.value)); setCalculated(false); }}
-                  className="w-full bg-white/10 text-white text-[14px] rounded-xl pl-4 pr-8 py-3 outline-none focus:ring-1 focus:ring-[#f0c132] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="5.5"
+                  onChange={(e) => { setInterestRate(e.target.value === "" ? "" : Number(e.target.value)); setCalculated(false); }}
+                  className="w-full bg-white/10 text-white text-[13px] rounded-xl pl-4 pr-8 py-3 outline-none focus:ring-1 focus:ring-[#f0c132] placeholder:text-white/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 text-[13px]">%</span>
+                <span className="absolute right-4 text-white/40 text-[13px] pointer-events-none">%</span>
               </div>
             </div>
 
-            {/* Loan Term slider */}
+            {/* Loan Term */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <label className="text-[11px] text-white/50 uppercase tracking-widest font-mono">
@@ -149,6 +229,7 @@ export default function BorrowSection({ data = FALLBACK }: BorrowSectionProps) {
 
           {/* Right: Output */}
           <div className="flex flex-col items-start gap-6 md:pl-8 md:border-l border-white/10">
+
             {/* Result */}
             <div className="flex flex-col gap-1">
               <span className="text-[11px] text-white/40 uppercase tracking-widest font-mono">
@@ -156,19 +237,19 @@ export default function BorrowSection({ data = FALLBACK }: BorrowSectionProps) {
               </span>
               <p className="text-[40px] md:text-[48px] font-bold text-white leading-none tracking-tight">
                 {calculated
-                  ? formatCurrency(monthlyPayment())
+                  ? formatCurrency(monthly())
                   : <span className="text-white/20">—</span>}
               </p>
               {calculated && (
                 <p className="text-[12px] text-white/40 mt-1">
-                  Loan amount: {formatCurrency(principal - downPayment)} over {termYears} years
+                  Loan: {formatCurrency(principal - downPayment)} over {termYears} yrs
                 </p>
               )}
             </div>
 
-            {/* Up arrow (calculate) */}
+            {/* Calculate button */}
             <button
-              onClick={handleCalculate}
+              onClick={() => setCalculated(true)}
               className="w-12 h-12 rounded-full bg-white flex items-center justify-center hover:bg-[#f0c132] transition-colors group"
               aria-label="Calculate"
             >
@@ -192,6 +273,7 @@ export default function BorrowSection({ data = FALLBACK }: BorrowSectionProps) {
                 Get In Touch
               </button>
             </div>
+
           </div>
         </div>
       </div>
