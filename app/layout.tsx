@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${plusJakarta.variable}`}>
-      <body>{children}</body>
+      <body>{children}<Analytics /><SpeedInsights/></body>
     </html>
   );
 }
