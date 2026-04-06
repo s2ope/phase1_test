@@ -23,8 +23,10 @@ function PropertyCard({ p }: { p: HomeRecord }) {
   const imageAlt = p.image?.alt ?? p.title ?? "Property image";
 
   return (
-    <div className="rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow group">
-      <div className="relative aspect-[4/3] overflow-hidden">
+    <div className="rounded-[24px] border border-black p-2 bg-white flex flex-col gap-2 hover:shadow-md transition-shadow group">
+
+      {/* Image */}
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[18px]">
         <Image
           src={imageUrl}
           alt={imageAlt}
@@ -32,15 +34,36 @@ function PropertyCard({ p }: { p: HomeRecord }) {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute bottom-0 left-0 right-0 bg-[#1a1a1a]/80 backdrop-blur-sm px-4 py-3">
-          <p className="text-white text-[15px] font-bold">
-            {p.price ?? "Price on request"}
-          </p>
-          <p className="text-white/70 text-[11px]">
-            {p.type === "for-sale" ? "For Sale" : "For Rent"} | {p.title ?? "Property"} · {p.location ?? ""}
-          </p>
+      </div>
+
+      {/* Info — dark box per spec */}
+      <div className="bg-[#1F1F1F] rounded-2xl p-4 flex flex-col gap-1.5 relative">
+        <p className="text-white text-[17px] font-bold tracking-tight">
+          {p.price ?? "Price on request"}
+        </p>
+        <p className="text-white/45 text-[12px]">
+          {p.type === "for-sale" ? "For Sale" : "For Rent"}&nbsp;|&nbsp;{p.title ?? "Property"} · {p.location ?? ""}
+        </p>
+
+        {/* Notch */}
+        <div className="relative h-[30px] flex justify-center mt-1">
+          <div className="absolute bottom-0 left-0 h-[30px] bg-[#1F1F1F] rounded-bl-2xl"
+               style={{ width: 'calc(50% - 26px)' }} />
+          <div className="absolute bottom-0 right-0 h-[30px] bg-[#1F1F1F] rounded-br-2xl"
+               style={{ width: 'calc(50% - 26px)' }} />
         </div>
       </div>
+
+      {/* Arrow button
+      <div className="flex justify-center -mt-[25px] relative z-10">
+        <button className="w-[50px] h-[50px] rounded-full bg-[#f0c132] hover:bg-[#f5d060] transition-colors flex items-center justify-center border border-black">
+          <svg width="18" height="18" viewBox="0 0 22 22" fill="none">
+            <path d="M5 5h12v12" stroke="#1a1b1e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M5 17L17 5" stroke="#1a1b1e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div> */}
+
     </div>
   );
 }

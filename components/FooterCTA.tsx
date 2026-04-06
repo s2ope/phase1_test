@@ -100,35 +100,36 @@ export default function FooterCTA({ data }: FooterProps) {
           {/* Divider */}
           {/* <div className="h-[1px] bg-white/10" /> */}
 
-          {/* Bottom row */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+         {/* Bottom row */}
+<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
 
-            {/* Links as pill badges matching the design */}
-            <nav className="flex items-center gap-3 flex-wrap">
-              {d.footerLinks?.map((link) => (
-                <Link
-                  key={link._key}
-                  href={link.href ?? "#"}
-                  className="text-[12px] text-white border border-white/20 rounded-full px-4 py-1.5 hover:border-white/50 hover:text-white transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
+  {/* Links as pill badges — left side */}
+  <nav className="flex items-center gap-3 flex-wrap">
+    {d.footerLinks?.map((link) => (
+      <Link
+        key={link._key}
+        href={link.href ?? "#"}
+        className="text-[12px] text-white border border-white/20 rounded-full px-4 py-1.5 hover:border-white/50 hover:text-white transition-colors"
+      >
+        {link.label}
+      </Link>
+    ))}
+  </nav>
 
-            {/* Logo + copyright */}
-            <div className="flex flex-col items-start sm:items-end gap-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#f0c132] text-base leading-none">▲</span>
-                <span className="text-white font-semibold text-[14px] tracking-tight">
-                  flatter
-                </span>
-              </div>
-              <span className="text-[11px] text-white/30">
-                © Copyright 2026, All Rights Reserved
-              </span>
-            </div>
-          </div>
+  {/* Logo + copyright — right side, right aligned */}
+  <div className="flex flex-col items-start gap-1">
+  <div className="flex items-center gap-1.5">
+    <span className="text-[#f0c132] text-base leading-none">▲</span>
+    <span className="text-white font-semibold text-[14px] tracking-tight">
+      flatter
+    </span>
+  </div>
+  <span className="text-[11px] text-white/30">
+    © Copyright 2026, All Rights Reserved
+  </span>
+</div>
+
+</div>
 
         </div>
       </footer>

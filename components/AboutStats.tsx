@@ -42,7 +42,7 @@ export default function AboutStats({ data }: AboutSectionProps) {
 
   const handleNext = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: 120, behavior: "smooth" });
+      sliderRef.current.scrollBy({ left: 160, behavior: "smooth" });
     }
   };
 
@@ -74,79 +74,63 @@ export default function AboutStats({ data }: AboutSectionProps) {
         </div>
 
         {/* Stats band */}
-        <div className="bg-[#1a1a1a] rounded-2xl px-5 sm:px-6 md:px-8 py-5 flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-0">
+        <div className="bg-[#1a1a1a] rounded-2xl px-6 sm:px-8 md:px-10 py-6 sm:py-7 flex flex-col md:flex-row md:items-center gap-6 md:gap-0">
 
-          {/* Stats row — wraps to 2-col grid on xs, row on sm+ */}
-          <div className="grid grid-cols-3 gap-4 sm:flex sm:items-center sm:gap-8 sm:flex-1">
+          {/* Stats — spaced evenly on desktop only */}
+          <div className="grid grid-cols-3 gap-6 md:flex md:items-center md:justify-around md:flex-1">
             {d.stats.map((stat, i) => (
-              <div key={stat._key ?? i} className="flex flex-col gap-1">
-                <span className="text-[22px] sm:text-[28px] md:text-[32px] font-bold text-[#f0c132] leading-none tracking-tight">
+              <div key={stat._key ?? i} className="flex flex-col gap-1.5">
+                <span className="text-[24px] sm:text-[28px] md:text-[34px] font-bold text-[#f0c132] leading-none tracking-tight">
                   {stat.value ?? "—"}
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-white/50 whitespace-nowrap">
+                <span className="text-[11px] sm:text-[12px] text-white/50 whitespace-nowrap">
                   {stat.label ?? ""}
                 </span>
               </div>
             ))}
           </div>
 
-          {/* Horizontal divider on mobile, vertical on sm+ */}
-          <div className="w-full h-[1px] sm:w-[1px] sm:h-10 bg-white/10 sm:mx-6 flex-shrink-0" />
+          {/* Divider */}
+          <div className="hidden md:block w-[1px] h-12 bg-white/10 mx-8 flex-shrink-0" />
 
-          {/* Arrow controls */}
-          <div className="flex items-center gap-4 flex-shrink-0">
-            <span className="text-white/40 text-[20px] sm:text-[22px] leading-none">→</span>
+          {/* Arrow controls — desktop only */}
+          <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+            <span className="text-white/40 text-[22px] leading-none">→</span>
             <button
               onClick={handleNext}
               aria-label="Next image"
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/25 flex items-center justify-center flex-shrink-0 hover:border-white/60 hover:bg-white/5 transition-all"
+              className="w-11 h-11 rounded-full border border-white/25 flex items-center justify-center flex-shrink-0 hover:border-white/60 hover:bg-white/5 transition-all"
             >
-              <span className="text-white text-[16px] sm:text-[18px] leading-none">→</span>
+              <span className="text-white text-[18px] leading-none">→</span>
             </button>
           </div>
 
-          {/* Vertical divider — only on md+ where slider is visible */}
-          <div className="hidden md:block w-[1px] h-10 bg-white/10 mx-6 flex-shrink-0" />
+          {/* Divider before slider — desktop only */}
+          <div className="hidden md:block w-[1px] h-12 bg-white/10 mx-8 flex-shrink-0" />
 
-          {/* Image slider — hidden on mobile/tablet, visible md+ */}
+          {/* Image slider — desktop only (ref-controlled, scrollable) */}
           <div
             ref={sliderRef}
-            className="hidden md:flex gap-2.5 overflow-x-auto scroll-smooth no-scrollbar flex-shrink-0"
-            style={{ width: "260px" }}
+            className="hidden md:flex gap-2.5 overflow-x-auto scroll-smooth no-scrollbar flex-shrink-0 w-[260px]"
           >
             {SLIDER_IMAGES.map((img, i) => (
               <div
                 key={i}
-                className="relative h-[64px] rounded-xl overflow-hidden flex-shrink-0"
-                style={{ width: "150px" }}
+                className="relative h-[64px] w-[150px] rounded-xl overflow-hidden flex-shrink-0"
               >
-                <Image
-                  src={img.url}
-                  alt={img.alt}
-                  fill
-                  sizes="150px"
-                  className="object-cover"
-                />
+                <Image src={img.url} alt={img.alt} fill sizes="150px" className="object-cover" />
               </div>
             ))}
           </div>
 
-          {/* Mobile-only horizontal image strip */}
-          <div
-            className="flex md:hidden gap-2.5 overflow-x-auto scroll-smooth no-scrollbar w-full"
-          >
+          {/* Image strip — mobile only (no ref, no arrows) */}
+          <div className="flex md:hidden gap-2.5 overflow-x-auto scroll-smooth no-scrollbar w-full">
             {SLIDER_IMAGES.map((img, i) => (
               <div
                 key={i}
-                className="relative h-[72px] rounded-xl overflow-hidden flex-shrink-0 w-[140px] sm:w-[160px]"
+                className="relative h-[72px] w-[140px] sm:w-[160px] rounded-xl overflow-hidden flex-shrink-0"
               >
-                <Image
-                  src={img.url}
-                  alt={img.alt}
-                  fill
-                  sizes="160px"
-                  className="object-cover"
-                />
+                <Image src={img.url} alt={img.alt} fill sizes="160px" className="object-cover" />
               </div>
             ))}
           </div>
