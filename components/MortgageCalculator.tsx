@@ -38,10 +38,10 @@ function calculateMonthlyPayment(
 export default function BorrowSection({ data = FALLBACK }: BorrowSectionProps) {
   const d = data ?? FALLBACK;
 
-  const [principalStr, setPrincipalStr] = useState("");
-  const [downStr, setDownStr] = useState("");
-  const [interestRate, setInterestRate] = useState<number | "">(5.5);
-  const [termYears, setTermYears] = useState(15);
+const [principalStr, setPrincipalStr] = useState("500000");
+const [downStr, setDownStr] = useState("100000");
+const [interestRate, setInterestRate] = useState<number | "">(5.5);
+const [termYears, setTermYears] = useState(15);
 
   const principal = parseFloat(principalStr) || 0;
   const downPayment = Math.min(parseFloat(downStr) || 0, principal);

@@ -95,7 +95,7 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
   const totalW = pillX + pillW;
   const totalH = outer;
 
-  const goldColor = isActive ? "#ffe033" : "#f0c132";
+  const goldColor = isActive ? "#ffe033" : "#888888";
 
   // Unique clip path ID to avoid conflicts between markers
   const clipId = `clip-${name.replace(/\s+/g, "-")}`;
