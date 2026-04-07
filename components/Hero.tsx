@@ -161,7 +161,7 @@ export default function Hero({ data }: HeroProps) {
             {/* Arrow button */}
             <div className="flex justify-center -mt-[36px] relative z-10">
               <button className="w-[72px] h-[72px] rounded-full bg-[#f0c132] hover:bg-[#f5d060] transition-colors flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="rotate-90">
                   <path
                     d="M7 7h14v14"
                     stroke="#0e121b"
