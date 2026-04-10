@@ -62,13 +62,6 @@ function loadGoogleMapsScript(apiKey: string): Promise<void> {
   });
 }
 
-// Full marker SVG:
-// - Outer glow:   108×108, #00000033, border 1px #000
-// - Black circle:  47×47,  #00000099, border 1px #000
-// - Gold dot:      18×18,  #f0c132
-// - Triangle pointer: 21×18, #000, rotated 90deg, border-radius 3px (via rx)
-// - Black pill label: 159×33, border-radius 24px, padding 8px, bg #000
-// - White text: Inter 14px, font-weight 400
 function createMarkerIcon(google: any, name: string, isActive: boolean) {
   const outer = 108;
   const mid = 47;
@@ -78,16 +71,13 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
   const pillH = 33;
   const pillRadius = 16;
 
-  // Triangle pointer dimensions
-  const triW = 18;  // height of triangle
-  const triD = 14;  // depth (how far it pokes left into the circle)
+  const triW = 18;
+  const triD = 14;
 
-  // Pill starts exactly at the circle edge (outer = 108)
-  const pillStartX = outer - triD; // triangle tip touches circle, pill overlaps slightly
+  const pillStartX = outer - triD;
   const triTipX = pillStartX;
   const triBaseX = pillStartX + triD;
 
-  // Make pill wide enough but clip text inside
   const pillW = 159;
   const pillX = triBaseX;
   const pillY = cx - pillH / 2;
@@ -97,7 +87,6 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
 
   const goldColor = isActive ? "#ffe033" : "#888888";
 
-  // Unique clip path ID to avoid conflicts between markers
   const clipId = `clip-${name.replace(/\s+/g, "-")}`;
 
   const svg = `
@@ -108,19 +97,14 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
         </clipPath>
       </defs>
 
-      <!-- Outer glow: 108×108, #00000033, 1px border -->
       <circle cx="${cx}" cy="${cx}" r="${outer / 2 - 0.5}"
         fill="#00000033" stroke="#000000" stroke-width="1" />
 
-      <!-- Black circle: 47×47, #00000099, 1px border -->
       <circle cx="${cx}" cy="${cx}" r="${mid / 2 - 0.5}"
         fill="#00000099" stroke="#000000" stroke-width="1" />
 
-      <!-- Gold dot: 18×18 -->
       <circle cx="${cx}" cy="${cx}" r="${dot / 2}" fill="${goldColor}" />
 
-      <!-- Pill + triangle as one connected shape -->
-      <!-- Triangle pointer pointing left, tip touching circle edge -->
       <polygon
         points="
           ${triTipX},${cx}
@@ -130,7 +114,6 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
         fill="#000000"
       />
 
-      <!-- Black pill -->
       <rect
         x="${pillX}" y="${pillY}"
         width="${pillW}" height="${pillH}"
@@ -138,7 +121,6 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
         fill="#000000"
       />
 
-      <!-- Text clipped inside pill -->
       <text
         x="${pillX + pillW / 2}"
         y="${cx}"
@@ -164,6 +146,8 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
 
 export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSectionProps) {
   const d = data ?? FALLBACK;
+  const locations = d.locations ?? [];
+
   const [activeLocation, setActiveLocation] = useState<ServiceLocation | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -201,16 +185,14 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
       });
 
       mapRef.current = map;
-      // No infoWindow needed — label is baked into the marker SVG
       infoWindowRef.current = null;
 
-      markersRef.current = (d.locations ?? []).map((loc) => {
+      markersRef.current = locations.map((loc) => {
         const marker = new google.maps.Marker({
           position: { lat: loc.lat, lng: loc.lng },
           map,
           title: loc.name,
-          icon: createMarkerIcon(google, loc.name, false),
-          // No separate label — it's drawn inside the SVG
+          icon: createMarkerIcon(google, loc.name ?? "", false),
         });
 
         marker.addListener("click", () => {
@@ -238,21 +220,26 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
       map.panTo({ lat: -7.8731, lng: 110.3948 });
       map.setZoom(11);
       markersRef.current.forEach((m, i) => {
-        const loc = d.locations[i];
-        m.setIcon(createMarkerIcon(google, loc.name, false));
+        const loc = locations[i];
+        if (!loc) return; // FIX: guard against undefined
+        m.setIcon(createMarkerIcon(google, loc.name ?? "", false));
       });
       return;
     }
 
-    const idx = (d.locations ?? []).findIndex((l) => l._key === activeLocation._key);
+    const idx = locations.findIndex((l) => l._key === activeLocation._key);
     if (idx === -1) return;
 
-    const loc = d.locations[idx];
-    map.panTo({ lat: loc.lat, lng: loc.lng });
+    const loc = locations[idx];
+
+    if (loc.lat == null || loc.lng == null) return;
+map.panTo({ lat: loc.lat, lng: loc.lng });
     setTimeout(() => map.setZoom(15), 300);
 
     markersRef.current.forEach((m, i) => {
-      m.setIcon(createMarkerIcon(google, d.locations[i].name, i === idx));
+      const markerLoc = locations[i];
+      if (!markerLoc) return; // FIX: guard against undefined
+      m.setIcon(createMarkerIcon(google, markerLoc.name ?? "", i === idx));
     });
   }, [activeLocation]);
 
@@ -276,7 +263,7 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
         {/* Map + Locations */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-5">
 
-          {/* Map — Figma: 785×530, #0E121B, border-radius 32px */}
+          {/* Map */}
           <div
             style={{
               background: "#0E121B",
@@ -300,7 +287,7 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
 
           {/* Location list */}
           <div className="flex flex-col gap-3 justify-start">
-            {(d.locations ?? []).map((loc) => {
+            {locations.map((loc) => {
               const isActive = activeLocation?._key === loc._key;
               return (
                 <button
