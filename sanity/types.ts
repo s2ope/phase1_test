@@ -139,3 +139,10 @@ export type TestimonialsSectionData = {
   viewMoreLabel?: string
   items?: TestimonialItem[]
 }
+
+declare global {
+  interface Window {
+    gtag: (...args: unknown[]) => void;
+    dataLayer: unknown[];
+  }
+}

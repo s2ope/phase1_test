@@ -100,11 +100,20 @@ alt: data?.searchImage?.alt ?? FALLBACK.searchImage?.alt,
     setQuery(value);
     setOpen(false);
     // Use `q` as a generic search param so properties page can match against title, location, neighborhood
+    if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "search_suggestion_selected", {
+      search_term: query,
+      selected_suggestion: value,
+    });
+  }
     router.push(`/properties?q=${encodeURIComponent(value)}`);
   }
 
   function handleSearch() {
     if (!query.trim()) return;
+     if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "search_initiated", { search_term: query.trim() });
+  }
     router.push(`/properties?q=${encodeURIComponent(query.trim())}`);
   }
 
