@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
-import ServiceAreaSection from "./ServiceArea";
+import ServiceAreaSection from "../components/ServiceArea";
 
 let mockMap: any;
 let mockMarkers: any[] = [];
