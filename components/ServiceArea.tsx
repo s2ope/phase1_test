@@ -66,7 +66,7 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
   const outer = 108;
   const mid = 47;
   const dot = 18;
-  const cx = outer / 2; // 54
+  const cx = outer / 2;
 
   const pillH = 33;
   const pillRadius = 16;
@@ -86,7 +86,6 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
   const totalH = outer;
 
   const goldColor = isActive ? "#ffe033" : "#888888";
-
   const clipId = `clip-${name.replace(/\s+/g, "-")}`;
 
   const svg = `
@@ -96,44 +95,17 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
           <rect x="${pillX}" y="${pillY}" width="${pillW}" height="${pillH}" rx="${pillRadius}" ry="${pillRadius}" />
         </clipPath>
       </defs>
-
-      <circle cx="${cx}" cy="${cx}" r="${outer / 2 - 0.5}"
-        fill="#00000033" stroke="#000000" stroke-width="1" />
-
-      <circle cx="${cx}" cy="${cx}" r="${mid / 2 - 0.5}"
-        fill="#00000099" stroke="#000000" stroke-width="1" />
-
+      <circle cx="${cx}" cy="${cx}" r="${outer / 2 - 0.5}" fill="#00000033" stroke="#000000" stroke-width="1" />
+      <circle cx="${cx}" cy="${cx}" r="${mid / 2 - 0.5}" fill="#00000099" stroke="#000000" stroke-width="1" />
       <circle cx="${cx}" cy="${cx}" r="${dot / 2}" fill="${goldColor}" />
-
-      <polygon
-        points="
-          ${triTipX},${cx}
-          ${triBaseX},${cx - triW / 2}
-          ${triBaseX},${cx + triW / 2}
-        "
-        fill="#000000"
-      />
-
-      <rect
-        x="${pillX}" y="${pillY}"
-        width="${pillW}" height="${pillH}"
-        rx="${pillRadius}" ry="${pillRadius}"
-        fill="#000000"
-      />
-
+      <polygon points="${triTipX},${cx} ${triBaseX},${cx - triW / 2} ${triBaseX},${cx + triW / 2}" fill="#000000" />
+      <rect x="${pillX}" y="${pillY}" width="${pillW}" height="${pillH}" rx="${pillRadius}" ry="${pillRadius}" fill="#000000" />
       <text
-        x="${pillX + pillW / 2}"
-        y="${cx}"
-        font-family="Inter, sans-serif"
-        font-size="14"
-        font-weight="400"
-        fill="#FFFFFF"
-        text-anchor="middle"
-        dominant-baseline="middle"
-        letter-spacing="0"
-        clip-path="url(#${clipId})"
+        x="${pillX + pillW / 2}" y="${cx}"
+        font-family="Inter, sans-serif" font-size="14" font-weight="400"
+        fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle"
+        letter-spacing="0" clip-path="url(#${clipId})"
       >${name}</text>
-
     </svg>
   `;
 
@@ -150,6 +122,13 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
 
   const [activeLocation, setActiveLocation] = useState<ServiceLocation | null>(null);
 
+  // Search / autocomplete state
+  const [query, setQuery] = useState("");
+  const [filtered, setFiltered] = useState<ServiceLocation[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -157,6 +136,51 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
+  // Filter as user types
+  useEffect(() => {
+    if (query.trim().length === 0) {
+      setFiltered([]);
+      setDropdownOpen(false);
+      return;
+    }
+    const q = query.toLowerCase();
+    const results = locations.filter(
+      (loc) =>
+        loc.name?.toLowerCase().includes(q) ||
+        loc.address?.toLowerCase().includes(q) ||
+        loc.type?.toLowerCase().includes(q)
+    );
+    setFiltered(results);
+    setDropdownOpen(results.length > 0);
+  }, [query, locations]);
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        !inputRef.current?.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleSelectSuggestion(loc: ServiceLocation) {
+    setQuery(loc.name ?? "");
+    setDropdownOpen(false);
+    setActiveLocation(loc);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Escape") setDropdownOpen(false);
+    if (e.key === "Enter" && filtered.length > 0) handleSelectSuggestion(filtered[0]!);
+  }
+
+  // Google Maps init
   useEffect(() => {
     if (!apiKey) return;
 
@@ -210,6 +234,7 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
     };
   }, [apiKey]);
 
+  // Pan + marker update on active change
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -221,7 +246,7 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
       map.setZoom(11);
       markersRef.current.forEach((m, i) => {
         const loc = locations[i];
-        if (!loc) return; // FIX: guard against undefined
+        if (!loc) return;
         m.setIcon(createMarkerIcon(google, loc.name ?? "", false));
       });
       return;
@@ -231,14 +256,15 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
     if (idx === -1) return;
 
     const loc = locations[idx];
-
+    if (!loc) return;
     if (loc.lat == null || loc.lng == null) return;
-map.panTo({ lat: loc.lat, lng: loc.lng });
+
+    map.panTo({ lat: loc.lat, lng: loc.lng });
     setTimeout(() => map.setZoom(15), 300);
 
     markersRef.current.forEach((m, i) => {
       const markerLoc = locations[i];
-      if (!markerLoc) return; // FIX: guard against undefined
+      if (!markerLoc) return;
       m.setIcon(createMarkerIcon(google, markerLoc.name ?? "", i === idx));
     });
   }, [activeLocation]);
@@ -258,6 +284,66 @@ map.panTo({ lat: loc.lat, lng: loc.lng });
           <h2 className="text-[36px] md:text-[44px] font-bold text-[#1a1a1a] leading-[1.1] tracking-tight">
             {d.headline}
           </h2>
+        </div>
+
+        {/* Search input with autocomplete */}
+        <div className="relative max-w-md mx-auto w-full">
+          <div className="flex items-center bg-white border border-[#1a1a1a]/15 rounded-2xl px-4 py-3 gap-3 shadow-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#1a1a1a]/30 flex-shrink-0">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={() => filtered.length > 0 && setDropdownOpen(true)}
+              placeholder="Search locations..."
+              className="flex-1 bg-transparent text-[13px] text-[#1a1a1a] placeholder:text-[#1a1a1a]/30 outline-none"
+            />
+            {query && (
+              <button
+                onClick={() => {
+                  setQuery("");
+                  setActiveLocation(null);
+                  setDropdownOpen(false);
+                }}
+                className="text-[#1a1a1a]/30 hover:text-[#1a1a1a]/60 transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Dropdown suggestions */}
+          {dropdownOpen && (
+            <div
+              ref={dropdownRef}
+              className="absolute left-0 right-0 top-full mt-2 bg-white border border-[#1a1a1a]/10 rounded-2xl shadow-xl z-50 overflow-hidden"
+            >
+              {filtered.map((loc) => (
+                <button
+                  key={loc._key}
+                  onClick={() => handleSelectSuggestion(loc)}
+                  className="w-full text-left px-4 py-3 hover:bg-[#f5f0e8] transition-colors flex items-center gap-3 border-b border-[#1a1a1a]/5 last:border-0"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 text-[#1a1a1a]/30">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                      stroke="currentColor" strokeWidth="1.8" />
+                    <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+                  </svg>
+                  <div className="flex flex-col">
+                    <span className="text-[13px] font-medium text-[#1a1a1a]">{loc.name}</span>
+                    <span className="text-[11px] text-[#1a1a1a]/40">{loc.address}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Map + Locations */}
@@ -324,7 +410,10 @@ map.panTo({ lat: loc.lat, lng: loc.lng });
 
             {activeLocation && (
               <button
-                onClick={() => setActiveLocation(null)}
+                onClick={() => {
+                  setActiveLocation(null);
+                  setQuery("");
+                }}
                 className="text-[11px] text-[#1a1a1a]/40 hover:text-[#1a1a1a]/70 transition-colors text-center mt-1"
               >
                 ← Show all locations
