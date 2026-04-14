@@ -23,15 +23,12 @@ export const metadata: Metadata = {
     "Searching for your new home? No matter where you're at in the home buying journey, you've come to the right place.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="en" className={`${inter.variable} ${plusJakarta.variable}`}>
-      <head>
+      <body>
         {GA_ID && (
           <>
             <Script
@@ -39,18 +36,20 @@ export default function RootLayout({
               strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">
-  {`
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){window.dataLayer.push(arguments);}
-    window.gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', '${GA_ID}');
-  `}
-</Script>
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){window.dataLayer.push(arguments);}
+                window.gtag = gtag;
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}');
+              `}
+            </Script>
           </>
         )}
-      </head>
-      <body>{children}<Analytics /><SpeedInsights/></body>
+        {children}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
