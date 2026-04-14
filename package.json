@@ -11,10 +11,13 @@
     "test:ci": "jest --ci --coverage"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^5.18.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "anthropic": "^0.0.0",
+    "dotenv": "^17.4.2",
     "leaflet": "^1.9.4",
     "next": "^16.2.1",
     "next-sanity": "^12.2.1",
