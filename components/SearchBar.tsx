@@ -89,11 +89,19 @@ export default function SearchBar({ data }: SearchSectionProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function fireEvent(name: string, params: Record<string, string>) {
-    if (typeof window !== "undefined" && typeof window.gtag === "function") {
-      window.gtag("event", name, params);
-    }
+function fireEvent(
+  name: string,
+  params: Record<string, string | number | boolean> = {}
+) {
+  if (typeof window === "undefined") return;
+
+  if (!window.gtag) {
+    console.warn("gtag not ready:", name, params);
+    return;
   }
+
+  window.gtag("event", name, params);
+}
 
   function handleSelect(value: string) {
     setQuery(value);
