@@ -3,6 +3,74 @@
 import { useState, useEffect, useRef } from "react";
 import type { ServiceAreaSectionData, ServiceLocation } from "../sanity/types";
 
+// Type declarations for Google Maps API
+declare global {
+  interface Window {
+    google: typeof google;
+  }
+}
+
+declare namespace google {
+  namespace maps {
+    class Map {
+      constructor(element: HTMLElement | null, options?: MapOptions);
+      panTo(latlng: LatLngLiteral): void;
+      setZoom(zoom: number): void;
+      setCenter(latlng: LatLngLiteral): void;
+    }
+    class Marker {
+      constructor(options?: MarkerOptions);
+      setMap(map: Map | null): void;
+      setIcon(icon: Icon | string): void;
+      addListener(event: string, handler: Function): void;
+    }
+    class InfoWindow {
+      constructor(options?: InfoWindowOptions);
+      open(options?: InfoWindowOpenOptions): void;
+      close(): void;
+    }
+    class Size {
+      constructor(width: number, height: number);
+    }
+    class Point {
+      constructor(x: number, y: number);
+    }
+    interface LatLngLiteral {
+      lat: number;
+      lng: number;
+    }
+    interface MapOptions {
+      center?: LatLngLiteral;
+      zoom?: number;
+      mapTypeControl?: boolean;
+      streetViewControl?: boolean;
+      fullscreenControl?: boolean;
+      zoomControl?: boolean;
+      styles?: any[];
+    }
+    interface MarkerOptions {
+      position?: LatLngLiteral;
+      map?: Map;
+      title?: string;
+      icon?: Icon | string;
+    }
+    interface Icon {
+      url: string;
+      scaledSize?: Size;
+      anchor?: Point;
+    }
+    interface InfoWindowOptions {
+      content?: string;
+      position?: LatLngLiteral;
+    }
+    interface InfoWindowOpenOptions {
+      map?: Map;
+      anchor?: Marker;
+      shouldFocus?: boolean;
+    }
+  }
+}
+
 interface ServiceAreaSectionProps {
   data?: ServiceAreaSectionData;
 }
@@ -116,11 +184,15 @@ function createMarkerIcon(google: any, name: string, isActive: boolean) {
   };
 }
 
-export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSectionProps) {
+export default function ServiceAreaSection({
+  data = FALLBACK,
+}: ServiceAreaSectionProps) {
   const d = data ?? FALLBACK;
   const locations = d.locations ?? [];
 
-  const [activeLocation, setActiveLocation] = useState<ServiceLocation | null>(null);
+  const [activeLocation, setActiveLocation] = useState<ServiceLocation | null>(
+    null,
+  );
 
   // Search / autocomplete state
   const [query, setQuery] = useState("");
@@ -148,7 +220,7 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
       (loc) =>
         loc.name?.toLowerCase().includes(q) ||
         loc.address?.toLowerCase().includes(q) ||
-        loc.type?.toLowerCase().includes(q)
+        loc.type?.toLowerCase().includes(q),
     );
     setFiltered(results);
     setDropdownOpen(results.length > 0);
@@ -177,7 +249,8 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") setDropdownOpen(false);
-    if (e.key === "Enter" && filtered.length > 0) handleSelectSuggestion(filtered[0]!);
+    if (e.key === "Enter" && filtered.length > 0)
+      handleSelectSuggestion(filtered[0]!);
   }
 
   // Google Maps init
@@ -199,12 +272,35 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
         styles: [
           { elementType: "geometry", stylers: [{ color: "#f5f0e8" }] },
           { elementType: "labels.text.fill", stylers: [{ color: "#4a4a4a" }] },
-          { elementType: "labels.text.stroke", stylers: [{ color: "#f5f0e8" }] },
-          { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
-          { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#e0d8ca" }] },
-          { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9e4f0" }] },
-          { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#d8ead0" }] },
-          { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+          {
+            elementType: "labels.text.stroke",
+            stylers: [{ color: "#f5f0e8" }],
+          },
+          {
+            featureType: "road",
+            elementType: "geometry",
+            stylers: [{ color: "#ffffff" }],
+          },
+          {
+            featureType: "road",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#e0d8ca" }],
+          },
+          {
+            featureType: "water",
+            elementType: "geometry",
+            stylers: [{ color: "#c9e4f0" }],
+          },
+          {
+            featureType: "poi.park",
+            elementType: "geometry",
+            stylers: [{ color: "#d8ead0" }],
+          },
+          {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }],
+          },
         ],
       });
 
@@ -272,7 +368,6 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 py-16">
       <div className="max-w-6xl mx-auto flex flex-col gap-8">
-
         {/* Header */}
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="flex items-center gap-2">
@@ -289,9 +384,26 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
         {/* Search input with autocomplete */}
         <div className="relative max-w-md mx-auto w-full">
           <div className="flex items-center bg-white border border-[#1a1a1a]/15 rounded-2xl px-4 py-3 gap-3 shadow-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#1a1a1a]/30 flex-shrink-0">
-              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
-              <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-[#1a1a1a]/30 flex-shrink-0"
+            >
+              <circle
+                cx="11"
+                cy="11"
+                r="7"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              />
+              <path
+                d="M16.5 16.5L21 21"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
             </svg>
             <input
               ref={inputRef}
@@ -313,7 +425,12 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
                 className="text-[#1a1a1a]/30 hover:text-[#1a1a1a]/60 transition-colors"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  <path
+                    d="M18 6L6 18M6 6l12 12"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </button>
             )}
@@ -331,14 +448,33 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
                   onClick={() => handleSelectSuggestion(loc)}
                   className="w-full text-left px-4 py-3 hover:bg-[#f5f0e8] transition-colors flex items-center gap-3 border-b border-[#1a1a1a]/5 last:border-0"
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 text-[#1a1a1a]/30">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-                      stroke="currentColor" strokeWidth="1.8" />
-                    <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="flex-shrink-0 text-[#1a1a1a]/30"
+                  >
+                    <path
+                      d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    />
+                    <circle
+                      cx="12"
+                      cy="9"
+                      r="2.5"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    />
                   </svg>
                   <div className="flex flex-col">
-                    <span className="text-[13px] font-medium text-[#1a1a1a]">{loc.name}</span>
-                    <span className="text-[11px] text-[#1a1a1a]/40">{loc.address}</span>
+                    <span className="text-[13px] font-medium text-[#1a1a1a]">
+                      {loc.name}
+                    </span>
+                    <span className="text-[11px] text-[#1a1a1a]/40">
+                      {loc.address}
+                    </span>
                   </div>
                 </button>
               ))}
@@ -348,7 +484,6 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
 
         {/* Map + Locations */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-5">
-
           {/* Map */}
           <div
             style={{
@@ -387,20 +522,42 @@ export default function ServiceAreaSection({ data = FALLBACK }: ServiceAreaSecti
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[14px] font-semibold text-[#1a1a1a]">{loc.name}</span>
-                      <span className="text-[11px] text-[#1a1a1a]/50">{loc.type}</span>
-                      <span className="text-[11px] text-[#1a1a1a]/40 mt-1 leading-snug">{loc.address}</span>
+                      <span className="text-[14px] font-semibold text-[#1a1a1a]">
+                        {loc.name}
+                      </span>
+                      <span className="text-[11px] text-[#1a1a1a]/50">
+                        {loc.type}
+                      </span>
+                      <span className="text-[11px] text-[#1a1a1a]/40 mt-1 leading-snug">
+                        {loc.address}
+                      </span>
                     </div>
                     <span
                       className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5 transition-colors ${
                         isActive ? "bg-[#f0c132]" : "bg-[#1a1a1a]/8"
                       }`}
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                        className={isActive ? "text-[#1a1a1a]" : "text-[#1a1a1a]/40"}>
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-                          stroke="currentColor" strokeWidth="2" />
-                        <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="2" />
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className={
+                          isActive ? "text-[#1a1a1a]" : "text-[#1a1a1a]/40"
+                        }
+                      >
+                        <path
+                          d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <circle
+                          cx="12"
+                          cy="9"
+                          r="2.5"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
                       </svg>
                     </span>
                   </div>

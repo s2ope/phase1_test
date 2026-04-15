@@ -43,7 +43,9 @@ export default function SearchBar({ data }: SearchSectionProps) {
 
   useEffect(() => {
     client
-      .fetch<{ title: string; location: string; address: string }[]>(searchLocationsQuery)
+      .fetch<{ title: string; location: string; address: string }[]>(
+        searchLocationsQuery,
+      )
       .then((results) => {
         const terms = new Set<string>();
         results.forEach((r) => {
@@ -69,7 +71,7 @@ export default function SearchBar({ data }: SearchSectionProps) {
       return;
     }
     const results = allTerms.filter((term) =>
-      term.toLowerCase().includes(query.toLowerCase())
+      term.toLowerCase().includes(query.toLowerCase()),
     );
     setFiltered(results);
     setOpen(results.length > 0);
@@ -89,19 +91,19 @@ export default function SearchBar({ data }: SearchSectionProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-function fireEvent(
-  name: string,
-  params: Record<string, string | number | boolean> = {}
-) {
-  if (typeof window === "undefined") return;
+  function fireEvent(
+    name: string,
+    params: Record<string, string | number | boolean> = {},
+  ) {
+    if (typeof window === "undefined") return;
 
-  if (!window.gtag) {
-    console.warn("gtag not ready:", name, params);
-    return;
+    if (!window.gtag) {
+      console.warn("gtag not ready:", name, params);
+      return;
+    }
+
+    window.gtag("event", name, params);
   }
-
-  window.gtag("event", name, params);
-}
 
   function handleSelect(value: string) {
     setQuery(value);
@@ -129,9 +131,7 @@ function fireEvent(
   return (
     <section className="bg-[#f5f0e8] px-6 md:px-10 pb-12">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center gap-4">
-
         <div className="relative bg-[#12151c] rounded-2xl flex items-center overflow-visible shadow-xl w-full md:w-[50%] flex-shrink-0">
-
           <div className="relative h-[110px] w-[130px] md:h-[130px] md:w-[160px] flex-shrink-0 rounded-xl overflow-hidden m-3">
             {d.searchImage.url && (
               <Image
@@ -155,7 +155,9 @@ function fireEvent(
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => filtered.length > 0 && setOpen(true)}
-              placeholder={loading ? "Loading locations..." : d.searchPlaceholder}
+              placeholder={
+                loading ? "Loading locations..." : d.searchPlaceholder
+              }
               disabled={loading}
               className="w-full bg-transparent text-white text-[13px] placeholder:text-white/30 outline-none border-b border-white/20 pb-2 focus:border-white/50 transition-colors disabled:opacity-40"
             />
@@ -171,9 +173,25 @@ function fireEvent(
                     onClick={() => handleSelect(suggestion)}
                     className="w-full text-left px-5 py-3 text-[13px] text-white/70 hover:bg-white/10 hover:text-white transition-colors flex items-center gap-3"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 text-white/30">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" strokeWidth="1.8" />
-                      <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="flex-shrink-0 text-white/30"
+                    >
+                      <path
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      />
+                      <circle
+                        cx="12"
+                        cy="9"
+                        r="2.5"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      />
                     </svg>
                     {suggestion}
                   </button>
@@ -187,8 +205,20 @@ function fireEvent(
             aria-label="Search properties"
             className="flex-shrink-0 w-[80px] h-[80px] md:w-[96px] md:h-[96px] rounded-full border border-white/20 flex items-center justify-center mr-3 hover:bg-white/5 hover:border-white/40 transition-all group"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform rotate-90">
-              <path d="M7 7h10v10M7 17L17 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-white group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform rotate-90"
+            >
+              <path
+                d="M7 7h10v10M7 17L17 7"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -199,7 +229,6 @@ function fireEvent(
             <span className="block">{d.headlineEnd}</span>
           </h2>
         </div>
-
       </div>
     </section>
   );
