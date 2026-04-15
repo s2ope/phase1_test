@@ -88,7 +88,17 @@ export default function FooterCTA({ data }: FooterProps) {
             }}
             aria-label="Scroll to top"
             className="w-14 h-14 rounded-full bg-[#f0c132] flex items-center justify-center hover:bg-[#f5d060] transition-colors shadow-lg hover:-translate-y-0.5 transform"
-          ></button>
+          >
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 13V3M3 8l5-5 5 5"
+                stroke="#1a1a1a"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
       </div>
 
