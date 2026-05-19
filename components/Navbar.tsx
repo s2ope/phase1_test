@@ -39,7 +39,7 @@ export default function Navbar() {
             style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
           />
           <span className="text-white font-semibold text-[15px] tracking-tight">
-            flatter
+            butter
           </span>
         </Link>
 
