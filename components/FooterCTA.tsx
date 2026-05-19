@@ -147,7 +147,7 @@ export default function FooterCTA({ data }: FooterProps) {
               <div className="flex items-center gap-1.5">
                 <span className="text-[#f0c132] text-base leading-none">▲</span>
                 <span className="text-white font-semibold text-[14px] tracking-tight">
-                  flatter
+                  butter
                 </span>
               </div>
               <span className="text-[11px] text-white/30">
